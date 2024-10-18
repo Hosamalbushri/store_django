@@ -143,3 +143,49 @@ def auto_delete_image_on_change(sender, instance, **kwargs):
     if old_image and old_image != new_image:
         if os.path.isfile(old_image.path):
             os.remove(old_image.path)  
+            
+###################### End Product Class ################################
+
+ATTRIBUTE_TYPE_CHOICES = [
+    ('text', 'Text'),
+    ('number', 'Number'),
+    ('color', 'Color'),
+]
+
+class Attribute(models.Model):
+    name = models.CharField(max_length=100,unique=True)
+    attribute_type = models.CharField(max_length=10, choices=ATTRIBUTE_TYPE_CHOICES)
+    
+    
+    def save(self, *args, **kwargs):
+        # Convert the product name to uppercase before saving
+        self.name = self.name.title()
+        super(Attribute, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+class SubAttribute(models.Model):
+    parent_attribute = models.ForeignKey(Attribute, related_name='sub_attributes', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100,unique=True)
+    value = models.CharField(max_length=100 , blank=True, null=True) 
+    
+    
+    def save(self, *args, **kwargs):
+        # Convert the product name to uppercase before saving
+        self.name = self.name.title()
+        super(SubAttribute, self).save(*args, **kwargs)
+    
+    def clean(self):
+        # Ensure the attribute_type matches the parent attribute's type
+        if not self.parent_attribute:
+            raise ValidationError("SubAttribute must be linked to a parent Attribute.")
+
+    @property
+    def attribute_type(self):
+        return self.parent_attribute.attribute_type
+
+    def __str__(self):
+        return f"{self.name} (Sub of {self.parent_attribute.name})"
+            
