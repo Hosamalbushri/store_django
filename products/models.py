@@ -4,6 +4,10 @@ from django.core.exceptions import ValidationError
 import os
 from django.dispatch import receiver
 
+
+
+############################ Begin  Category class ###################################################          
+
 class Category(MPTTModel):
     
     STATUS_CHOICES = (
@@ -80,7 +84,11 @@ def auto_delete_file_on_change(sender, instance, **kwargs):
         if os.path.isfile(old_image.path):
             os.remove(old_image.path)
                        
-############################ End  Category class ###################################################          
+############################ End  Category class ###################################################   
+
+
+############################ Begin  Product class ###################################################          
+       
 
 class Product(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -146,6 +154,10 @@ def auto_delete_image_on_change(sender, instance, **kwargs):
             
 ###################### End Product Class ################################
 
+
+############################ Begin  Attribute class ###################################################          
+
+
 ATTRIBUTE_TYPE_CHOICES = [
     ('text', 'Text'),
     ('number', 'Number'),
@@ -174,7 +186,7 @@ class SubAttribute(models.Model):
     
     def save(self, *args, **kwargs):
         # Convert the product name to uppercase before saving
-        self.name = self.name.title()
+        self.name = self.name.upper()
         super(SubAttribute, self).save(*args, **kwargs)
     
     def clean(self):
@@ -188,4 +200,7 @@ class SubAttribute(models.Model):
 
     def __str__(self):
         return f"{self.name} (Sub of {self.parent_attribute.name})"
+    
+    ############################ End  Attribute class ###################################################          
+
             

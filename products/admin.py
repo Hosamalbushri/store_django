@@ -158,7 +158,9 @@ class AttributeAdmin(admin.ModelAdmin):
         if obj is None:
             return []  # Hide inlines for new Attribute creation
         return inlines
-
-admin.site.register(Attribute, AttributeAdmin)
+    
+    
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Category, CategoryAdmin)
+admin.site.register(Attribute, AttributeAdmin)
+
