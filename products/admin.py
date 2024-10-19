@@ -1,6 +1,6 @@
 from django.contrib import admin
 from mptt.admin import DraggableMPTTAdmin
-from .models import Category,Product, ProductImage,Attribute, SubAttribute
+from .models import Category,Product, ProductImage,Attribute,SubAttribute ,Brand,Discount
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django import forms
@@ -33,7 +33,7 @@ class CategoryAdmin(DraggableMPTTAdmin):
     def delete_model(self, request, obj):
         """
         Custom delete logic: Prevent deletion if category has children.
-        """
+        """   
         if obj.get_children().exists():
             # Display an error message and prevent deletion
             messages.error(request, f"لا يمكن حذف القسم '{obj.name}' لأنه يحتوي على أقسام فرعية.")
@@ -42,12 +42,14 @@ class CategoryAdmin(DraggableMPTTAdmin):
    
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
-    # extra = 8  # Number of empty forms to display
+    extra = 0  # Number of empty forms to display
 
 # Custom admin for Product
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'status')
+    list_display = ('name', 'category', 'status','get_price_after_discount')
     inlines = [ProductImageInline]  # Attach ProductImageInline to ProductAdmin
+    
+
     
     
     def save_related(self, request, objs, *args, **kwargs):
@@ -94,6 +96,7 @@ class SubAttributeForm(forms.ModelForm):
     class Meta:
         model = SubAttribute
         fields = '__all__'
+           
 
     def __init__(self, *args, **kwargs):
         super(SubAttributeForm, self).__init__(*args, **kwargs)
@@ -138,6 +141,7 @@ class SubAttributeInline(admin.TabularInline):
     model = SubAttribute
     form = SubAttributeForm
     extra = 0  # Number of blank forms to display
+   
     # def has_add_permission(self, request, obj=None):
     #     return False  # Prevent adding new SubAttributes from here
 
@@ -158,9 +162,26 @@ class AttributeAdmin(admin.ModelAdmin):
         if obj is None:
             return []  # Hide inlines for new Attribute creation
         return inlines
+###########################################################################################################
+
+class BrandAdmin(admin.ModelAdmin):
+    list_display = ('name', 'logo')
+    search_fields = ('name',)
     
     
+class DiscountAdmin(admin.ModelAdmin):
+    list_display = ('discount_type', 'value', 'start_date', 'end_date', 'active')
+    list_filter = ('discount_type', 'active')
+    search_fields = ('value',)   
+    
+    
+    
+  
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Attribute, AttributeAdmin)
+admin.site.register(Brand, BrandAdmin)
+admin.site.register(Discount, DiscountAdmin)
+
+
 
