@@ -4,6 +4,7 @@ from .models import Category,Product, ProductImage,Attribute,SubAttribute ,Brand
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django import forms
+from django.utils.html import format_html
 
 
 # Register your models here.
@@ -96,20 +97,24 @@ class SubAttributeForm(forms.ModelForm):
     class Meta:
         model = SubAttribute
         fields = '__all__'
+        
            
 
     def __init__(self, *args, **kwargs):
         super(SubAttributeForm, self).__init__(*args, **kwargs)
+        # self.fields['value'].label = 'Custom Value Label'  # Change this to the desired label
+
         
-        # Check if we're editing an existing instance
-        if self.instance.pk:  # Instance already exists (editing)
-            attribute_type = self.instance.parent_attribute.attribute_type
+        # # Check if we're editing an existing instance
+        # if self.instance.pk:  # Instance already exists (editing)
+        #     attribute_type = self.instance.parent_attribute.attribute_type
             
-            # Show the 'value' field based on the parent attribute type
-            self._update_value_field(attribute_type)
-        else:  # Creating a new instance
-            # Hide the 'value' field for new SubAttributes
-            self.fields['value'].widget = forms.HiddenInput()
+        #     # Show the 'value' field based on the parent attribute type
+        #     self._update_value_field(attribute_type)
+        # else:  # Creating a new instance
+        #     # Hide the 'value' field for new SubAttributes
+        #     self.fields['value'].widget = forms.HiddenInput()
+
 
         # Check if we're editing an existing instance
         if self.instance.pk:  # instance already exists
@@ -140,13 +145,11 @@ class SubAttributeForm(forms.ModelForm):
 class SubAttributeInline(admin.TabularInline):
     model = SubAttribute
     form = SubAttributeForm
-    extra = 0  # Number of blank forms to display
-   
-    # def has_add_permission(self, request, obj=None):
-    #     return False  # Prevent adding new SubAttributes from here
+    list_display = ('name', 'value')
+    
 
-    # def has_change_permission(self, request, obj=None):
-    #     return True  # Allow changing existing SubAttributes
+
+    extra = 0  # Number of blank forms to display
     def get_formset(self, request, obj=None, **kwargs):
         formset = super().get_formset(request, obj, **kwargs)
         # You can customize the formset if needed
@@ -165,8 +168,17 @@ class AttributeAdmin(admin.ModelAdmin):
 ###########################################################################################################
 
 class BrandAdmin(admin.ModelAdmin):
-    list_display = ('name', 'logo')
+    list_display = ('name', 'logo_display')
     search_fields = ('name',)
+    
+    def logo_display(self, obj):
+        """Display the avatar image in the admin."""
+        if obj.logo:
+            return format_html('<img src="{}" style="width: 50px; height: 50px; border-radius: 50%;">',
+                               obj.logo)
+        return "No logo"
+    
+    logo_display.short_description = 'logo'
     
     
 class DiscountAdmin(admin.ModelAdmin):
