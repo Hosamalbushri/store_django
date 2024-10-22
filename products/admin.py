@@ -4,7 +4,8 @@ from .models import Category,Product, ProductImage,Attribute,SubAttribute ,Brand
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django import forms
-from django.utils.html import format_html
+from django.utils.html import format_html , mark_safe
+
 
 
 # Register your models here.
@@ -13,9 +14,17 @@ from .models import Category
 class CategoryAdmin(DraggableMPTTAdmin):
    
     mptt_indent_field = "name"
-    list_display = ('tree_actions', 'indented_title','status')
+    list_display = ('tree_actions', 'indented_title','status','image_tag')
     list_display_links = ('indented_title',)
+    
+    
+    def image_tag(self, obj):
+        return format_html('<img src="{}" style="width: 50px; height: 50px; border-radius: 50"/>'.format(obj.image.url))
+    
+    image_tag.short_description = 'Current Image'
+        
 
+    
     def save_model(self, request, obj, form, change):
         obj.full_clean()  # يضمن تشغيل دالة clean قبل الحفظ
         super().save_model(request, obj, form, change)
@@ -168,17 +177,13 @@ class AttributeAdmin(admin.ModelAdmin):
 ###########################################################################################################
 
 class BrandAdmin(admin.ModelAdmin):
-    list_display = ('name', 'logo_display')
+    list_display = ('name', 'logo_tag')
     search_fields = ('name',)
     
-    def logo_display(self, obj):
-        """Display the avatar image in the admin."""
-        if obj.logo:
-            return format_html('<img src="{}" style="width: 50px; height: 50px; border-radius: 50%;">',
-                               obj.logo)
-        return "No logo"
+    def logo_tag(self, obj):
+        return format_html('<img src="{}"  style="width: 50px; height: 50px; border-radius: 50"/>'.format(obj.logo.url))
+
     
-    logo_display.short_description = 'logo'
     
     
 class DiscountAdmin(admin.ModelAdmin):

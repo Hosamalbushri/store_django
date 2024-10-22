@@ -25,6 +25,10 @@ class Category(MPTTModel):
     )
     image = models.ImageField(upload_to='Categories/photos/%y/%m/%d')
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='1')
+    
+   
+    
+    
 
     class MPTTMeta:
         order_insertion_by = ['name']
