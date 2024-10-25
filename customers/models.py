@@ -1,15 +1,14 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Customer(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)  
     GENDER_CHOICES = [
         ('M', 'Male'),
         ('F', 'Female'),
         ('O', 'Other'),
     ]
-
-    email = models.EmailField(unique=True)
-    name = models.CharField(max_length=255)
-    password = models.CharField(max_length=255)  # The password will be handled by AbstractBaseUser
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, default='M')
     birthday = models.DateField(null=True, blank=True)
     photo = models.ImageField(upload_to='customers/photos/%Y/%m/%d/', null=True, blank=True)
@@ -20,12 +19,12 @@ class Customer(models.Model):
     # USERNAME_FIELD = 'email'
     # REQUIRED_FIELDS = ['name']
 
-    class Meta:
-        verbose_name = 'Customer'
-        verbose_name_plural = 'Customers'
+    # class Meta:
+    #     verbose_name = 'Customer'
+    #     verbose_name_plural = 'Customers'
 
     def __str__(self):
-        return self.name
+        return self.user.username
 
     def clean(self):
         # Optionally, you can add custom validation here (e.g., validate email or birthday)
@@ -43,7 +42,7 @@ class Address(models.Model):
         ('shipping', 'Shipping'),
     ]
 
-    customer = models.ForeignKey(Customer, related_name='addresses', on_delete=models.CASCADE)
+    customer = models.ForeignKey(User, related_name='addresses', on_delete=models.CASCADE)
     address_type = models.CharField(max_length=10, choices=ADDRESS_TYPE_CHOICES)
     street_address = models.CharField(max_length=255)
     city = models.CharField(max_length=100)
@@ -53,4 +52,4 @@ class Address(models.Model):
     
     
     def __str__(self):
-        return f"{self.customer.name} - {self.address_type.capitalize()} Address"    
+        return f"{self.customer.username} - {self.address_type.capitalize()} Address"    
