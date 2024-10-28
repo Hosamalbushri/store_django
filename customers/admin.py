@@ -1,24 +1,43 @@
 from django.contrib import admin
-
-from customers.models import Customer
-
-
-
-
-# class AddressInline(admin.TabularInline):  # or admin.StackedInline for a different layout
-#     model = Address
-#     extra = 1  # Number of empty address forms to display by default
-#     fields = ['street_address', 'city', 'state', 'postal_code', 'country']  # Fields to display
-#     readonly_fields = ['customer']  # You can make the customer field read-only if needed
-#     def get_readonly_fields(self, request, obj=None):
-#         if obj:  # Editing an existing customer
-#             return ['street_address', 'city', 'state', 'postal_code', 'country']
-#         return super().get_readonly_fields(request, obj)
-
+from django.utils.html import mark_safe
+from customers.models import Address, Customer
+    
 class CustomerAdmin(admin.ModelAdmin):
     list_display = ( 'phone_number', 'user_email', 'phone_number', 'is_active')
     search_fields = ('user__username', 'user__email', 'phone_number')
-    readonly_fields = ('user_email', 'user_first_name', 'user_last_name','gender','phone_number','birthday')  # Adding related fields as readonly
+    readonly_fields = ('user_email', 'user_first_name', 'user_last_name','gender','phone_number','birthday','address_list')  # Adding related fields as readonly
+    
+    def has_delete_permission(self, request, obj=None):
+        # Disallow delete permission for all users
+        return False
+    
+    def has_add_permission(self, request):
+        # Disallow adding new Address entries in the admin
+        return False
+    
+
+    def address_list(self, obj):
+        addresses = Address.objects.filter(user=obj.user)
+        
+        if not addresses:
+            return "No addresses available"
+        
+        # Format the addresses as HTML
+        address_html = "<br>".join(
+            [
+                f"<p><strong>Name:</strong> {address.name}<br>"
+                f"<strong>Email:</strong> {address.email}<br>"
+                f"<strong>Phone:</strong> {address.phone_number}<br>"
+                f"<strong>Country:</strong> {address.country}<br>"
+                f"<strong>City:</strong> {address.city}<br>"
+                f"<strong>Street:</strong> {address.street}<br>"
+                f"<strong>Postal Code:</strong> {address.postal_code}<br><hr></p>"
+                for address in addresses
+            ]
+        )
+        return mark_safe(address_html)  # Use mark_safe to render as HTML in the admin
+    address_list.short_description = "Addresses"
+
 
     def user_email(self, obj):
         return obj.user.email
@@ -31,7 +50,7 @@ class CustomerAdmin(admin.ModelAdmin):
     def user_last_name(self, obj):
         return obj.user.last_name
     user_last_name.short_description = 'Last Name'
-
+    
     # Add the user fields to fieldsets if needed
     fieldsets = (
         (None, {
@@ -40,23 +59,13 @@ class CustomerAdmin(admin.ModelAdmin):
         ('Customer Status', {
             'fields': ['is_active'],
         }),
+        ('Addresses', {   # Separate fieldset for addresses
+            'fields': ('address_list',),
+        }),
     )
     
-    
-#     fields = ['name', 'email', 'gender', 'birthday', 'is_active']
 
-#     def get_form(self, request, obj=None, **kwargs):
-#         form = super().get_form(request, obj, **kwargs)
-#         if obj:  # Editing an existing customer
-#             form.base_fields.pop('password', None)  # Remove 'password' field from the form
-#         return form
-
-#     # Allow only the 'active' field to be editable by the admin
-#     def get_readonly_fields(self, request, obj=None):
-#         if obj:  # Editing an existing customer
-#             return ['name', 'email', 'gender', 'birthday']
-#         return super().get_readonly_fields(request, obj)
     
-#     inlines = [AddressInline]
+    
 
 admin.site.register(Customer, CustomerAdmin)
