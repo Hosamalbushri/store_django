@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
+
+from products.models import Product
 
 class Customer(models.Model):
     user = models.OneToOneField(User, related_name='user' ,on_delete=models.CASCADE)
@@ -61,3 +64,45 @@ class Address(models.Model):
 
     def __str__(self):
         return f"{self.name}, {self.street}, {self.city},{self.country} - {self.postal_code}" 
+    
+    
+    
+    
+class Favorite(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favorites')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')  # Prevents duplicate favorites for the same user-product pair
+        ordering = ['-created_at']  # Shows most recent favorites first
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name}"    
+    
+    
+    
+    
+
+class Cart(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Cart for {self.user.username}"
+
+    def total_price(self):
+        # Calculate the total price of items in the cart
+        return sum(item.total_price() for item in self.items.all())
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='cart_items')
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.quantity} of {self.product.name} in cart"
+
+    def total_price(self):
+        # Calculate the total price for this item (product price * quantity)
+        return self.product.price * self.quantity    

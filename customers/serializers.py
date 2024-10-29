@@ -1,7 +1,9 @@
 # your_app/serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Customer
+
+from products.models import Product
+from .models import Cart, CartItem, Customer, Favorite
 from .models import Address
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
@@ -105,4 +107,33 @@ class AddressSerializer(serializers.ModelSerializer):
         model = Address
         fields = ['id', 'user', 'name', 'email', 'phone_number','country', 'city', 'street', 'postal_code', 'is_default']
         read_only_fields = ['user']  
-    
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='product.name', read_only=True)  # Optional product name field
+    product_id = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), source='product')
+
+    class Meta:
+        model = Favorite
+        fields = ['id', 'product_id', 'product_name', 'created_at']
+        read_only_fields = ['user']  # The user will be automatically assigned    
+        
+        
+        
+        
+class CartItemSerializer(serializers.ModelSerializer):
+    product_name = serializers.ReadOnlyField(source='product.name')
+    total_price = serializers.ReadOnlyField()
+
+    class Meta:
+        model = CartItem
+        fields = ['id', 'product', 'product_name', 'quantity', 'total_price']
+
+class CartSerializer(serializers.ModelSerializer):
+    items = CartItemSerializer(many=True)
+    total_price = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Cart
+        fields = ['id', 'user', 'items', 'total_price']
+        read_only_fields = ['user']        
