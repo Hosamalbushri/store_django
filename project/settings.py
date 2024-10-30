@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'products.apps.ProductsConfig',
     'customers.apps.CustomersConfig',
+    'orders.apps.OrdersConfig',
     # 'admin_soft.apps.AdminSoftDashboardConfig',
     'django.contrib.admin',
     'django.contrib.auth',

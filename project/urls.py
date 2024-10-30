@@ -25,6 +25,8 @@ urlpatterns = [
     # path('', include('admin_soft.urls')),
     path('api/',include('products.urls')),
     path('auth/',include('customers.urls')),
+    path('order/',include('orders.urls')),
+
 
 
 
