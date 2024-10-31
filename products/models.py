@@ -172,7 +172,7 @@ class Brand(models.Model):
                 os.remove(this.logo.path)
         except Brand.DoesNotExist:
             pass  # This is a new object, so no need to delete an old logo
-
+        self.name = self.name.title()
         super(Brand, self).save(*args, **kwargs)
 
 
@@ -224,12 +224,12 @@ class Discount(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products', blank=False, null=False)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True)
     discount = models.ForeignKey(Discount, on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.CharField(max_length=10, choices=(('on', 'On'), ('off', 'Off')), default='off')
+    status = models.CharField(max_length=1, choices=(('1', 'On'), ('0', 'Off')), default='1')
     attributes = models.ManyToManyField(SubAttribute, blank=True)
     
     
@@ -254,9 +254,13 @@ class Product(models.Model):
 
     def clean(self):
       super().clean()
+      
+      if not self.category:
+            raise ValidationError("Please select a category for the product.")
+        
     # Ensure the product belongs to child categories only (not parent categories)
       if self.category.get_children().exists():  # MPTT method to check if category has children
-        raise ValidationError("لا يمكن ربط المنتج بفئة رئيسية، فقط الفئات الفرعية مسموح بها.")   #
+        raise ValidationError("Cannot assign a product to a parent category. Only subcategories are allowed.")   #
     
     
     

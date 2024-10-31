@@ -26,7 +26,7 @@ class CategoryAdmin(DraggableMPTTAdmin):
 
     
     def save_model(self, request, obj, form, change):
-        obj.full_clean()  # يضمن تشغيل دالة clean قبل الحفظ
+        obj.full_clean()  
         super().save_model(request, obj, form, change)
         
         
@@ -77,14 +77,7 @@ class ProductAdmin(admin.ModelAdmin):
         obj.name = obj.name.title()
         super().save_model(request, obj, form, change)
 
-    # def has_delete_permission(self, request, obj=None):
-    #     """
-    #     Prevent deletion of products if they have related images.
-    #     """
-    #     if obj and obj.images.exists():
-    #         messages.error(request, f"لا يمكن حذف المنتج '{obj.name}' لأنه يحتوي على صور.")
-    #         return False
-    #     return super().has_delete_permission(request, obj)
+
 
 ####################################### Attribute ######################################################################################
 class AttributeForm(forms.ModelForm):

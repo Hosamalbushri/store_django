@@ -1,9 +1,17 @@
 # views.py
 from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from .models import Order, OrderItem, Product, Address
-from .serializers import OrderItemSerializer, OrderSerializer
+from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
+from .models import Order, OrderItem, PaymentMethod, Product, Address
+from .serializers import OrderItemSerializer, OrderSerializer, PaymentMethodSerializer
+
+
+
+class PaymentMethodListView(generics.ListAPIView):
+    queryset = PaymentMethod.objects.all()
+    serializer_class = PaymentMethodSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]  # Allow access to any user
+
 
 class OrderCreateView(generics.CreateAPIView):
     serializer_class = OrderSerializer
@@ -12,6 +20,7 @@ class OrderCreateView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         user = request.user
         shipping_address_id = request.data.get('shipping_address')
+        payment_method_id = request.data.get('payment_method')
         items_data = request.data.get('items')
 
         # Validate shipping address
@@ -19,11 +28,19 @@ class OrderCreateView(generics.CreateAPIView):
             shipping_address = Address.objects.get(id=shipping_address_id, user=user)
         except Address.DoesNotExist:
             return Response({"detail": "Invalid shipping address."}, status=status.HTTP_400_BAD_REQUEST)
+        
+         # Validate shipping address
+        try:
+            payment_method = PaymentMethod.objects.get(id=payment_method_id)
+        except PaymentMethod.DoesNotExist:
+            return Response({"detail": "Invalid payment  method."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Create the order with recipient details
         order = Order.objects.create(
             user=user,
-            shipping_address=shipping_address
+            shipping_address=shipping_address,
+            payment_method=payment_method
+            
         )
 
         # Add items to the order with attributes

@@ -5,6 +5,22 @@ from django.db import models
 from customers.models import Address
 from products.models import Product
 
+
+class PaymentMethod(models.Model):
+    PAYMENT_CHOICES = [
+        ('credit_card', 'Credit Card'),
+        ('paypal', 'PayPal'),
+        ('bank_transfer', 'Bank Transfer'),
+        ('cash_on_delivery', 'Cash on Delivery')
+    ]
+    name = models.CharField(max_length=50, choices=PAYMENT_CHOICES, unique=True)
+    description = models.TextField(blank=True, null=True)  # Optional description
+
+    def __str__(self):
+        return self.get_name_display()
+    
+    
+
 class Order(models.Model):
     # Status choices for the order
     class Status(models.TextChoices):
@@ -16,11 +32,22 @@ class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders")
     shipping_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, related_name="orders")
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    payment_method = models.OneToOneField(PaymentMethod, on_delete=models.CASCADE,related_name="orders")  # Linking PaymentMethod
+    order_number = models.PositiveIntegerField(unique=True, editable=False)  # Add order number field
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True) 
 
     def __str__(self):
-        return f"Order {self.id} by {self.user.username}"
+        return f"Order {self.order_number} for {self.user.username}"
+    
+    
+    def save(self, *args, **kwargs):
+        
+        if not self.order_number:
+            # Get the maximum order number and increment by 1, or start with 1 if no orders exist
+            last_order = Order.objects.all().order_by('order_number').last()
+            self.order_number = last_order.order_number + 1 if last_order else 1
+        super().save(*args, **kwargs)
 
     def total_price(self):
         # Calculate the total price of all items in the order
@@ -34,7 +61,7 @@ class OrderItem(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     product_attributes = models.JSONField(null=True, blank=True) 
     def __str__(self):
-        return f"{self.quantity} of {self.product.name} in order {self.order.id}"
+        return f" "
 
     def total_price(self):
         return self.price * self.quantity

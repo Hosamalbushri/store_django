@@ -2,12 +2,20 @@ from rest_framework import serializers
 from .models import Category, Product, ProductImage, SubAttribute, Attribute
 
 class CategorySerializer(serializers.ModelSerializer):
-    parent_id = serializers.PrimaryKeyRelatedField(source='parent', read_only=True)  # Parent Category ID
-    parent_name = serializers.CharField(source='parent.name', read_only=True)  # Parent Category Name
+    children = serializers.SerializerMethodField()  # Recursive field to include subcategories
 
     class Meta:
         model = Category
-        fields = ['id', 'name', 'parent_id', 'parent_name']  # Reordered fields for clarity
+        fields = ['id', 'name', 'image', 'children']
+
+    def get_children(self, obj):
+        if obj.children.exists():
+            return CategorySerializer(obj.children.all(), many=True).data
+        return []
+
+    
+    
+    
 
 class AttributeSerializer(serializers.ModelSerializer):
     class Meta:

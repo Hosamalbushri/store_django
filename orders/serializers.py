@@ -1,6 +1,15 @@
 # serializers.py
 from rest_framework import serializers
-from .models import Order, OrderItem
+from .models import Order, OrderItem, PaymentMethod
+
+
+
+class PaymentMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentMethod
+        fields = ['id', 'name', 'description'] 
+
+
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.ReadOnlyField(source='product.name')
@@ -16,16 +25,24 @@ class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
     total_price = serializers.ReadOnlyField()
     shipping_address_details = serializers.ReadOnlyField(source="shipping_address.full_address")
+    payment_method = serializers.PrimaryKeyRelatedField(queryset=PaymentMethod.objects.all(), required=True)
+
+    
 
     class Meta:
         model = Order
         fields = [
             'id', 'user',
-            'status', 'shipping_address', 'shipping_address_details', 'items', 'total_price',
+            'status', 'shipping_address', 'shipping_address_details','payment_method','items', 'total_price',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['user', 'status', 'total_price', 'created_at', 'updated_at']
-        
+            
+    def validate(self, data):
+        # Ensure that the payment field is provided when creating a new order
+        if self.instance is None and not data.get('payment_method'):
+            raise serializers.ValidationError({"payment": "Payment is required when creating an order."})
+        return data
         
         
     def update(self, instance, validated_data):
