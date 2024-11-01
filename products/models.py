@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 import os
 from django.dispatch import receiver
 from django.utils import timezone
+from filer.fields.image import FilerImageField
 
 
 
@@ -23,7 +24,7 @@ class Category(MPTTModel):
         blank=True,
         related_name='children'
     )
-    image = models.ImageField(upload_to='Categories/photos/%y/%m/%d')
+    image = FilerImageField(null=True, blank=True, related_name="category_images", on_delete=models.SET_NULL)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='1')
     
    
@@ -75,30 +76,7 @@ class Category(MPTTModel):
         super().delete(*args, **kwargs)
            
         
-# Signal to delete the image file when the Product instance is deleted
-@receiver(models.signals.post_delete, sender=Category)
-def auto_delete_file_on_delete(sender, instance, **kwargs):
-    """Deletes file from filesystem when corresponding `Product` object is deleted."""
-    if instance.image:
-        if os.path.isfile(instance.image.path):
-            os.remove(instance.image.path)        
-            
-@receiver(models.signals.pre_save, sender=Category)
-def auto_delete_file_on_change(sender, instance, **kwargs):
-    """Deletes old file from filesystem when corresponding `Product` object is updated with a new file."""
-    if not instance.pk:
-        return False
 
-    try:
-        old_image = Category.objects.get(pk=instance.pk).image
-    except Category.DoesNotExist:
-        return False
-
-    new_image = instance.image
-    if old_image and old_image != new_image:
-        if os.path.isfile(old_image.path):
-            os.remove(old_image.path)
-                       
 ############################ End  Category class ###################################################   
 
 
@@ -153,7 +131,7 @@ class SubAttribute(models.Model):
 
 class Brand(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    logo = models.ImageField(upload_to='brands/logos/%y/%m/%d', blank=False, null=False)  # Ensure logo is required
+    logo = FilerImageField(null=True, blank=True, related_name="brand_images", on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.name
@@ -165,13 +143,6 @@ class Brand(models.Model):
             raise ValidationError("The maximum file size allowed for the logo is 2 MB.")
 
     def save(self, *args, **kwargs):
-        # Automatically delete the old file when replacing with a new one
-        try:
-            this = Brand.objects.get(id=self.id)
-            if this.logo != self.logo and os.path.isfile(this.logo.path):
-                os.remove(this.logo.path)
-        except Brand.DoesNotExist:
-            pass  # This is a new object, so no need to delete an old logo
         self.name = self.name.title()
         super(Brand, self).save(*args, **kwargs)
 
@@ -269,40 +240,11 @@ class Product(models.Model):
 # ProductImage model to store multiple photos for a product
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='Products/photos/%y/%m/%d')  # Image is required
+    image = FilerImageField(related_name="product_images",on_delete=models.SET_NULL,null=True, blank=True)  # Image is required
+    
 
     def __str__(self):
         return f"{self.product.name} - Image"
     
-    
-    def clean(self):
-        # Check image size
-        if self.image.size > 2 * 1024 * 1024:  # 2 MB
-            raise ValidationError("The maximum file size allowed is 2 MB.")
-
-# Signal to delete the image file when the ProductImage instance is deleted
-@receiver(models.signals.post_delete, sender=ProductImage)
-def auto_delete_image_on_delete(sender, instance, **kwargs):
-    """Deletes file from filesystem when corresponding `ProductImage` object is deleted."""
-    if instance.image:
-        if os.path.isfile(instance.image.path):
-            os.remove(instance.image.path)
-
-# Signal to delete the old image file when the ProductImage is updated with a new file
-@receiver(models.signals.pre_save, sender=ProductImage)
-def auto_delete_image_on_change(sender, instance, **kwargs):
-    """Deletes old file from filesystem when corresponding `ProductImage` object is updated with a new file."""
-    if not instance.pk:
-        return False
-
-    try:
-        old_image = ProductImage.objects.get(pk=instance.pk).image
-    except ProductImage.DoesNotExist:
-        return False
-
-    new_image = instance.image
-    if old_image and old_image != new_image:
-        if os.path.isfile(old_image.path):
-            os.remove(old_image.path)  
             
 ###################### End Product Class ################################

@@ -170,11 +170,17 @@ class AttributeAdmin(admin.ModelAdmin):
 ###########################################################################################################
 
 class BrandAdmin(admin.ModelAdmin):
-    list_display = ('name', 'logo_tag')
+    list_display = ('name', 'thumbnail')
     search_fields = ('name',)
     
-    def logo_tag(self, obj):
-        return format_html('<img src="{}"  style="width: 50px; height: 50px; border-radius: 50"/>'.format(obj.logo.url))
+   
+    def thumbnail(self, obj):
+        """Display the image thumbnail in the admin list."""
+        if obj.logo:
+            return format_html('<img src="{}" style="width: 50px; height: auto;" />', obj.logo.url)
+        return "No Image"  # Fallback if no image is present
+
+    thumbnail.short_description = 'Image' 
 
     
     

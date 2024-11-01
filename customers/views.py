@@ -2,11 +2,11 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics
 
 from products.models import Product
-from .serializers import CartItemSerializer, CartSerializer, CustomTokenObtainPairSerializer, CustomerProfileSerializer, FavoriteSerializer, PasswordChangeSerializer, RegisterSerializer, UserSerializer
+from .serializers import  CartItemSerializer, CartSerializer, CustomTokenObtainPairSerializer, CustomerProfileSerializer, FavoriteSerializer, PasswordChangeSerializer, RegisterSerializer, UserSerializer
 from rest_framework.permissions import AllowAny ,IsAuthenticated
 from django.contrib.auth.models import User
 from rest_framework import viewsets
-from .models import Address, Cart, CartItem, Customer, Favorite
+from .models import Address, Cart, CartItem,  Customer, Favorite
 from .serializers import AddressSerializer
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view ,permission_classes

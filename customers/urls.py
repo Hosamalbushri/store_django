@@ -1,5 +1,5 @@
 from django.urls import path ,include
-from .views import AddToCartView, AddressListCreateView, AddressRetrieveUpdateDestroyView, CartView, CustomTokenObtainPairView, CustomerProfileView, FavoriteDeleteView, FavoriteListCreateView, RegisterView, RemoveFromCartView, UpdateCartItemView, change_password, update_user_profile
+from .views import  AddToCartView, AddressListCreateView, AddressRetrieveUpdateDestroyView, CartView, CustomTokenObtainPairView, CustomerProfileView, FavoriteDeleteView, FavoriteListCreateView, RegisterView, RemoveFromCartView, UpdateCartItemView, change_password, update_user_profile
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView 
 from rest_framework.routers import DefaultRouter
 

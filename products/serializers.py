@@ -3,15 +3,23 @@ from .models import Category, Product, ProductImage, SubAttribute, Attribute
 
 class CategorySerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()  # Recursive field to include subcategories
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
-        fields = ['id', 'name', 'image', 'children']
+        fields = ['id', 'name','image_url', 'children']
 
     def get_children(self, obj):
         if obj.children.exists():
             return CategorySerializer(obj.children.all(), many=True).data
         return []
+    
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.image and request:
+            return request.build_absolute_uri(obj.image.url)
+        return None
+
 
     
     

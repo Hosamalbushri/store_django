@@ -3,7 +3,7 @@ from django.utils.html import mark_safe
 from customers.models import Address, Customer
     
 class CustomerAdmin(admin.ModelAdmin):
-    list_display = ( 'phone_number', 'user_email', 'phone_number', 'is_active')
+    list_display = ( 'user_name', 'user_email', 'phone_number', 'is_active')
     search_fields = ('user__username', 'user__email', 'phone_number')
     readonly_fields = ('user_email', 'user_first_name', 'user_last_name','gender','phone_number','birthday','address_list')  # Adding related fields as readonly
     
@@ -38,7 +38,9 @@ class CustomerAdmin(admin.ModelAdmin):
         return mark_safe(address_html)  # Use mark_safe to render as HTML in the admin
     address_list.short_description = "Addresses"
 
-
+    def user_name(self, obj):
+        return obj.user.username
+    user_name.short_description = 'User Name '
     def user_email(self, obj):
         return obj.user.email
     user_email.short_description = 'Email'
