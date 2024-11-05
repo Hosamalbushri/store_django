@@ -213,27 +213,24 @@ class Product(models.Model):
             elif self.discount.discount_type == 'fixed':
                 return self.price - self.discount.value
         return self.price
+    
+    
+    def delete(self, *args, **kwargs):
+        # Check if the product has related OrderItems, CartItems, or Favorites
+        if self.order_items.exists() or self.cart_items.exists() or self.favorites.exists():
+            raise ValidationError("This product is associated with an order, cart, or favorite. You cannot delete it.")
+        super().delete(*args, **kwargs)
 
 
     def __str__(self):
         return self.name
 
+
+    
     def save(self, *args, **kwargs):
         # Convert the product name to Title Case (first letters capitalized)
         self.name = self.name.title()
         super(Product, self).save(*args, **kwargs)
-
-    def clean(self):
-      super().clean()
-      
-      if not self.category:
-            raise ValidationError("Please select a category for the product.")
-        
-    # Ensure the product belongs to child categories only (not parent categories)
-      if self.category.get_children().exists():  # MPTT method to check if category has children
-        raise ValidationError("Cannot assign a product to a parent category. Only subcategories are allowed.")   #
-    
-    
     
     
 

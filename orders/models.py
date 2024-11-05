@@ -32,7 +32,7 @@ class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders")
     shipping_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, related_name="orders")
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
-    payment_method = models.OneToOneField(PaymentMethod, on_delete=models.CASCADE,related_name="orders")  # Linking PaymentMethod
+    payment_method = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE,related_name="orders")  # Linking PaymentMethod
     order_number = models.PositiveIntegerField(unique=True, editable=False)  # Add order number field
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True) 
@@ -61,7 +61,13 @@ class OrderItem(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     product_attributes = models.JSONField(null=True, blank=True) 
     def __str__(self):
-        return f" "
+        return f"Order {self.order.order_number} for {self.order.user.username}"   
+    
+    def save(self, *args, **kwargs):
+        # Set the price to the discounted price from the Product model
+        if not self.price:
+            self.price = self.product.get_price_after_discount()
+        super(OrderItem, self).save(*args, **kwargs)
 
     def total_price(self):
         return self.price * self.quantity

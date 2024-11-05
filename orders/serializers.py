@@ -64,7 +64,6 @@ class OrderSerializer(serializers.ModelSerializer):
                     # Update existing OrderItem
                     order_item = instance.items.get(id=item_id)
                     order_item.quantity = item_data.get('quantity', order_item.quantity)
-                    order_item.price = item_data.get('price', order_item.price)
                     order_item.product_attributes = item_data.get('product_attributes', order_item.product_attributes)
                     order_item.save()
                 else:

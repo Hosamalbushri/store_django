@@ -104,5 +104,6 @@ class CartItem(models.Model):
         return f"{self.quantity} of {self.product.name} in cart"
 
     def total_price(self):
-        # Calculate the total price for this item (product price * quantity)
-        return self.product.price * self.quantity    
+        # Use the discounted price if there’s a discount; otherwise, use the regular price
+        discounted_price = self.product.get_price_after_discount()
+        return discounted_price * self.quantity

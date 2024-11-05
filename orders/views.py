@@ -50,7 +50,7 @@ class OrderCreateView(generics.CreateAPIView):
             product_attributes = item_data.get('product_attributes', {})
 
             try:
-                product = Product.objects.get(id=product_id)
+                product = Product.objects.get(id=product_id,status='1')
             except Product.DoesNotExist:
                 return Response({"detail": f"Product with id {product_id} not found."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -58,7 +58,7 @@ class OrderCreateView(generics.CreateAPIView):
                 order=order,
                 product=product,
                 quantity=quantity,
-                price=product.price,
+                price=product.get_price_after_discount(),
                 product_attributes=product_attributes
             )
 

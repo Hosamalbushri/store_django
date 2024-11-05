@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     'imagekit',
     'easy_thumbnails',
     'filer',
+    # 'admin_reorder',
+
 ]
 X_FRAME_OPTIONS = "SAMEORIGIN"
 SILENCED_SYSTEM_CHECKS = ["security.W019"]
@@ -63,6 +65,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'admin_reorder.middleware.ModelAdminReorder',
+
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -179,5 +183,26 @@ THUMBNAIL_PROCESSORS = (
     #'easy_thumbnails.processors.scale_and_crop',
     'filer.thumbnail_processors.scale_and_crop_with_subject_location',
     'easy_thumbnails.processors.filters',
+)
+
+ADMIN_REORDER = (
+    # # Keep original label and models
+    # 'sites',
+    
+    # Rename app
+    # {'app': 'auth', 'label': 'Authorisation'},
+
+    # # Reorder app models
+    # {'app': 'auth', 'models': ('auth.User', 'auth.Group')},
+
+    # # # Exclude models
+    # # {'app': 'auth', 'models': ('auth.User', )},
+
+    # # # Cross-linked models
+    # # {'app': 'auth', 'models': ('auth.User', 'sites.Site')},
+
+    # models with custom name
+ 
+   
 )
 

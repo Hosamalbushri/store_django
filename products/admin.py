@@ -7,7 +7,6 @@ from django import forms
 from django.utils.html import format_html , mark_safe
 
 
-
 # Register your models here.
 from .models import Category
 
@@ -15,8 +14,9 @@ class CategoryAdmin(DraggableMPTTAdmin):
    
     mptt_indent_field = "name"
     list_display = ('tree_actions', 'indented_title','status','image_tag')
-    list_display_links = ('indented_title',)
-    
+    list_display_links = ('indented_title','image_tag')
+    list_editable=['status']
+
     
     def image_tag(self, obj):
         return format_html('<img src="{}" style="width: 50px; height: 50px; border-radius: 50"/>'.format(obj.image.url))
@@ -52,30 +52,55 @@ class CategoryAdmin(DraggableMPTTAdmin):
    
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
-    extra = 0  # Number of empty forms to display
+    extra = 1  # Number of empty forms to display
+  
 
-# Custom admin for Product
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        category = cleaned_data.get('category')
+        
+        # Validate category exists
+        if not category:
+            raise ValidationError("Please select a category for the product.")
+        
+        # Ensure the product is assigned only to a subcategory, not a parent category
+        if category and category.get_children().exists():  # Assuming MPTT is used
+            raise ValidationError("Cannot assign a product to a parent category. Only subcategories are allowed.")
+        
+        return cleaned_data
+    
+    
 class ProductAdmin(admin.ModelAdmin):
+    form = ProductForm  # Link the custom form to ProductAdmin
     list_display = ('name', 'category', 'status','get_price_after_discount')
     inlines = [ProductImageInline]  # Attach ProductImageInline to ProductAdmin
+    list_per_page = 50    
+    save_on_top = True
+    list_display_links = ('name','get_price_after_discount')
+    list_editable=('status','category')
     
-
     
-    
-    def save_related(self, request, objs, *args, **kwargs):
-        super().save_related(request, objs, *args, **kwargs)
-        
-        # for product in objs:
-        #     # Validate the number of images
-        #     if product.images.count() > 8:
-        #         raise ValidationError("A product can have a maximum of 8 images.")
-
     def save_model(self, request, obj, form, change):
-        """
-        Override save_model to ensure product name is title cased.
-        """
+        # Format name to title case
         obj.name = obj.name.title()
+        if obj.pk and not obj.category:
+            raise ValidationError("Please select a category for the product.")
+     
+        
+    # Ensure the product belongs to child categories only (not parent categories)
+        if obj.category.get_children().exists():  # MPTT method to check if category has children
+           raise ValidationError("Cannot assign a product to a parent category. Only subcategories are allowed.")   #
         super().save_model(request, obj, form, change)
+        
+     
+        
+
 
 
 
@@ -104,20 +129,7 @@ class SubAttributeForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(SubAttributeForm, self).__init__(*args, **kwargs)
-        # self.fields['value'].label = 'Custom Value Label'  # Change this to the desired label
-
         
-        # # Check if we're editing an existing instance
-        # if self.instance.pk:  # Instance already exists (editing)
-        #     attribute_type = self.instance.parent_attribute.attribute_type
-            
-        #     # Show the 'value' field based on the parent attribute type
-        #     self._update_value_field(attribute_type)
-        # else:  # Creating a new instance
-        #     # Hide the 'value' field for new SubAttributes
-        #     self.fields['value'].widget = forms.HiddenInput()
-
-
         # Check if we're editing an existing instance
         if self.instance.pk:  # instance already exists
             attribute_type = self.instance.parent_attribute.attribute_type
@@ -147,6 +159,7 @@ class SubAttributeForm(forms.ModelForm):
 class SubAttributeInline(admin.TabularInline):
     model = SubAttribute
     form = SubAttributeForm
+    
     list_display = ('name', 'value')
     
 
@@ -160,6 +173,7 @@ class SubAttributeInline(admin.TabularInline):
 class AttributeAdmin(admin.ModelAdmin):
     form = AttributeForm
     list_display = ('name', 'attribute_type')
+    save_on_top = True
     inlines = [SubAttributeInline]  # Attach SubAttributeInline to Attribute admin
     def get_inline_instances(self, request, obj=None):
         inlines = super().get_inline_instances(request, obj)
@@ -172,6 +186,8 @@ class AttributeAdmin(admin.ModelAdmin):
 class BrandAdmin(admin.ModelAdmin):
     list_display = ('name', 'thumbnail')
     search_fields = ('name',)
+    save_on_top = True
+
     
    
     def thumbnail(self, obj):
@@ -188,7 +204,12 @@ class BrandAdmin(admin.ModelAdmin):
 class DiscountAdmin(admin.ModelAdmin):
     list_display = ('discount_type', 'value', 'start_date', 'end_date', 'active')
     list_filter = ('discount_type', 'active')
+    list_display_links = ('discount_type','start_date','end_date')
     search_fields = ('value',)   
+    save_on_top = True
+    list_editable=('value',)
+
+
     
     
     
