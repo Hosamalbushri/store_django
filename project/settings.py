@@ -35,27 +35,27 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     
-    'rest_framework',
-    'products.apps.ProductsConfig',
-    'customers.apps.CustomersConfig',
-    'orders.apps.OrdersConfig',
+   
     # 'admin_soft.apps.AdminSoftDashboardConfig',
-    "admin_interface",
+    # "admin_interface",
     "colorfield",
+    'imagekit',
+    'rest_framework',
+    'django_daisy',
     'django.contrib.admin',
-    'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'imagekit',
+    'orders.apps.OrdersConfig',
+    'products.apps.ProductsConfig',
+    'customers.apps.CustomersConfig',
+    'django.contrib.auth',
     'easy_thumbnails',
     'filer',
-    # 'admin_reorder',
 
 ]
-X_FRAME_OPTIONS = "SAMEORIGIN"
-SILENCED_SYSTEM_CHECKS = ["security.W019"]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -65,7 +65,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'admin_reorder.middleware.ModelAdminReorder',
 
 ]
 
@@ -77,12 +76,16 @@ TEMPLATES = [
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
+            
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                  
             ],
+            
+            
         },
     },
 ]
@@ -164,7 +167,6 @@ USE_TZ = True
 STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
-# FILER_CANONICAL_URL = 'sharing/'
 
 
 
@@ -177,6 +179,9 @@ FILER_IS_PUBLIC_DEFAULT=True
 # FILER_ENABLE_PERMISSIONS =True
 # FILER_UPLOADER_MAX_FILE_SIZE = int(5)
 
+
+
+
 THUMBNAIL_PROCESSORS = (
     'easy_thumbnails.processors.colorspace',
     'easy_thumbnails.processors.autocrop',
@@ -185,24 +190,5 @@ THUMBNAIL_PROCESSORS = (
     'easy_thumbnails.processors.filters',
 )
 
-ADMIN_REORDER = (
-    # # Keep original label and models
-    # 'sites',
-    
-    # Rename app
-    # {'app': 'auth', 'label': 'Authorisation'},
 
-    # # Reorder app models
-    # {'app': 'auth', 'models': ('auth.User', 'auth.Group')},
-
-    # # # Exclude models
-    # # {'app': 'auth', 'models': ('auth.User', )},
-
-    # # # Cross-linked models
-    # # {'app': 'auth', 'models': ('auth.User', 'sites.Site')},
-
-    # models with custom name
- 
-   
-)
 

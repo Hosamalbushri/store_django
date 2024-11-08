@@ -136,11 +136,7 @@ class Brand(models.Model):
     def __str__(self):
         return self.name
 
-    def clean(self):
-        super().clean()
-        # Custom validation for logo field, for example, check size
-        if self.logo and self.logo.size > 2 * 1024 * 1024:  # 2 MB max size
-            raise ValidationError("The maximum file size allowed for the logo is 2 MB.")
+ 
 
     def save(self, *args, **kwargs):
         self.name = self.name.title()

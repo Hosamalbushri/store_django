@@ -23,9 +23,11 @@ class OrderItemInline(admin.TabularInline):
 
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'order_number','status', 'created_at', 'updated_at')
+    list_display = ('user', 'order_number','status', 'created_at', 'updated_at')
     list_filter = ('status',)
     search_fields = ('user__username', 'user__email','order_number')
+    list_display_links = ('user','order_number')
+
     
     
     def has_add_permission(self, request, obj=None):

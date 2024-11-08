@@ -22,6 +22,29 @@ class CategoryAdmin(DraggableMPTTAdmin):
         return format_html('<img src="{}" style="width: 50px; height: 50px; border-radius: 50"/>'.format(obj.image.url))
     
     image_tag.short_description = 'Current Image'
+    
+    
+    fieldsets = (
+        ('Category Info', {
+        'fields': (
+        'name',
+        'parent',
+        'status',
+        ),
+        
+        }),
+        
+        ('Category Image', {
+        'fields': (
+        'image',
+        ),
+        # "classes": ["wide", "collapse"],
+
+        })
+       
+      
+
+    )
         
 
     
@@ -81,10 +104,13 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'status','get_price_after_discount')
     inlines = [ProductImageInline]  # Attach ProductImageInline to ProductAdmin
     list_per_page = 50    
-    save_on_top = True
+    # save_on_top = True
     list_display_links = ('name','get_price_after_discount')
     list_editable=('status','category')
-    
+    # view_on_site = False
+
+
+
     
     def save_model(self, request, obj, form, change):
         # Format name to title case
@@ -210,8 +236,7 @@ class DiscountAdmin(admin.ModelAdmin):
     list_editable=('value',)
 
 
-    
-    
+
     
   
 admin.site.register(Product, ProductAdmin)
