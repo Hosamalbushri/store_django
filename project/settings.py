@@ -38,10 +38,11 @@ INSTALLED_APPS = [
    
     # 'admin_soft.apps.AdminSoftDashboardConfig',
     # "admin_interface",
-    "colorfield",
+    # "colorfield",
     'imagekit',
     'rest_framework',
     'django_daisy',
+    'flat',
     'django.contrib.admin',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -55,6 +56,8 @@ INSTALLED_APPS = [
     'filer',
 
 ]
+
+
 
 
 MIDDLEWARE = [

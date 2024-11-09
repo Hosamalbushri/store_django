@@ -212,7 +212,6 @@ class AttributeAdmin(admin.ModelAdmin):
 class BrandAdmin(admin.ModelAdmin):
     list_display = ('name', 'thumbnail')
     search_fields = ('name',)
-    save_on_top = True
 
     
    
@@ -232,7 +231,6 @@ class DiscountAdmin(admin.ModelAdmin):
     list_filter = ('discount_type', 'active')
     list_display_links = ('discount_type','start_date','end_date')
     search_fields = ('value',)   
-    save_on_top = True
     list_editable=('value',)
 
 
