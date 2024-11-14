@@ -111,7 +111,7 @@ class SubAttribute(models.Model):
     
     
     def save(self, *args, **kwargs):
-        # Convert the product name to uppercase before saving
+        # Convert the  name to uppercase before saving
         self.name = self.name.upper()
         super(SubAttribute, self).save(*args, **kwargs)
     
@@ -125,8 +125,7 @@ class SubAttribute(models.Model):
         return self.parent_attribute.attribute_type
 
     def __str__(self):
-        return f"( {self.parent_attribute.name} )-->{self.name} "
-    
+        return f"( {self.parent_attribute.name} )-->{self.name}".strip()     
     ############################ End  Attribute class ###################################################          
 
 class Brand(models.Model):
@@ -143,13 +142,7 @@ class Brand(models.Model):
         super(Brand, self).save(*args, **kwargs)
 
 
-# Signal to delete the logo file when a Brand instance is deleted
-@receiver(models.signals.post_delete, sender=Brand)
-def auto_delete_logo_on_delete(sender, instance, **kwargs):
-    """Deletes file from filesystem when corresponding `Brand` object is deleted."""
-    if instance.logo:
-        if os.path.isfile(instance.logo.path):
-            os.remove(instance.logo.path)     
+ 
     
 ####################################################################################################
 

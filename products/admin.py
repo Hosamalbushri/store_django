@@ -19,7 +19,11 @@ class CategoryAdmin(DraggableMPTTAdmin):
 
     
     def image_tag(self, obj):
-        return format_html('<img src="{}" style="width: 50px; height: 50px; border-radius: 50"/>'.format(obj.image.url))
+        
+     if obj.image:
+            return format_html('<img src="{}" style="width: 100px; height: 100px; border-radius: 50"/>'.format(obj.image.url))
+     return "No Image"  # Fallback if no image is present
+
     
     image_tag.short_description = 'Current Image'
     
@@ -199,7 +203,6 @@ class SubAttributeInline(admin.TabularInline):
 class AttributeAdmin(admin.ModelAdmin):
     form = AttributeForm
     list_display = ('name', 'attribute_type')
-    save_on_top = True
     inlines = [SubAttributeInline]  # Attach SubAttributeInline to Attribute admin
     def get_inline_instances(self, request, obj=None):
         inlines = super().get_inline_instances(request, obj)
