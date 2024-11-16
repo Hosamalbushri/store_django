@@ -25,7 +25,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             if not customer.is_active:
                 raise serializers.ValidationError("This account is inactive. Please contact support.")
         except Customer.DoesNotExist:
-            raise serializers.ValidationError("Customer profile does not exist.")
+            raise serializers.ValidationError("This  Account  does not exist.")
 
         return data
 

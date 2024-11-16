@@ -13,6 +13,7 @@ class CategorySerializer(serializers.ModelSerializer):
         if obj.children.exists():
             return CategorySerializer(obj.children.all(), many=True).data
         return []
+    get_children.short_description= "Sub_attribute"
     
     def get_image_url(self, obj):
         request = self.context.get('request')
@@ -57,7 +58,7 @@ class ProductSerializer(serializers.ModelSerializer):
     )  # For write operations
 
     images = ProductImageSerializer(many=True, read_only=True)  # Nested ProductImageSerializer
-    brand_name = serializers.CharField(source='brand.name')  # Get the brand name directly
+    brand_name = serializers.CharField(source='brand.name',default=None)  # Get the brand name directly
     attributes = SubAttributeSerializer(many=True, read_only=True)  # Nested SubAttributeSerializer
     price_after_discount = serializers.SerializerMethodField()  # Add a method field for the discounted price
 
@@ -74,3 +75,5 @@ class ProductSerializer(serializers.ModelSerializer):
             elif obj.discount.discount_type == 'fixed':
                 return obj.price - obj.discount.value
         return obj.price  # Return the original price if no discount is applicable
+    
+    

@@ -4,14 +4,21 @@ from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.pagination import PageNumberPagination
 
+
+class CustomPagination(PageNumberPagination):
+    page_size = 5 
 
 class CategoryListView(APIView):
     def get(self, request):
         # Retrieve only top-level categories (without a parent) to start the tree structure
         top_categories = Category.objects.filter(parent=None, status='1')  # Filter for active categories
-        serializer = CategorySerializer(top_categories, many=True)
-        return Response(serializer.data)
+        paginator = CustomPagination()
+        paginated_queryset = paginator.paginate_queryset(top_categories, request)
+        serializer = CategorySerializer(paginated_queryset, many=True)
+        return paginator.get_paginated_response(serializer.data)    
+    
     permission_classes = [IsAuthenticatedOrReadOnly]  # Allow access to any user
 
     

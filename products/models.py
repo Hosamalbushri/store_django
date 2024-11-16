@@ -22,7 +22,7 @@ class Category(MPTTModel):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name='children'
+        related_name='children',
     )
     image = FilerImageField(null=True, blank=True, related_name="category_images", on_delete=models.SET_NULL)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='1')
@@ -102,17 +102,22 @@ class Attribute(models.Model):
 
     def __str__(self):
         return self.name
+    
+    
+    def last_five_sub_attributes(self):
+        # Get the last 5 sub-attributes related to this attribute
+        return self.sub_attributes.all().order_by('-id')[:5]
 
 
 class SubAttribute(models.Model):
-    parent_attribute = models.ForeignKey(Attribute, related_name='sub_attributes', on_delete=models.CASCADE)
+    parent_attribute = models.ForeignKey(Attribute, related_name='sub_attributes', on_delete=models.CASCADE )
     name = models.CharField(max_length=100,unique=True)
     value = models.CharField(max_length=100 , blank=True, null=True) 
     
     
     def save(self, *args, **kwargs):
         # Convert the  name to uppercase before saving
-        self.name = self.name.upper()
+        self.name = self.name.title()
         super(SubAttribute, self).save(*args, **kwargs)
     
     def clean(self):
@@ -202,7 +207,7 @@ class Product(models.Model):
             elif self.discount.discount_type == 'fixed':
                 return self.price - self.discount.value
         return self.price
-    
+    get_price_after_discount.short_description= "Total Price"
     
     def delete(self, *args, **kwargs):
         # Check if the product has related OrderItems, CartItems, or Favorites

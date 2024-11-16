@@ -13,19 +13,19 @@ from .models import Category
 class CategoryAdmin(DraggableMPTTAdmin):
    
     mptt_indent_field = "name"
-    list_display = ('tree_actions', 'indented_title','status','image_tag')
-    list_display_links = ('indented_title','image_tag')
+    list_display = ('tree_actions', 'indented_title','status')
+    list_display_links = ('indented_title',)
     list_editable=['status']
 
     
-    def image_tag(self, obj):
+    # def image_tag(self, obj):
         
-     if obj.image:
-            return format_html('<img src="{}" style="width: 100px; height: 100px; border-radius: 50"/>'.format(obj.image.url))
-     return "No Image"  # Fallback if no image is present
+    #  if obj.image:
+    #         return format_html('<img src="{}" style="width: 100px; height: 100px; border-radius: 50"/>'.format(obj.image.url))
+    #  return "No Image"  # Fallback if no image is present
 
     
-    image_tag.short_description = 'Current Image'
+    # image_tag.short_description = 'Current Image'
     
     
     fieldsets = (
@@ -153,9 +153,8 @@ class AttributeForm(forms.ModelForm):
 class SubAttributeForm(forms.ModelForm):
     class Meta:
         model = SubAttribute
-        fields = '__all__'
-        
-           
+        fields = ("name","value")
+  
 
     def __init__(self, *args, **kwargs):
         super(SubAttributeForm, self).__init__(*args, **kwargs)
@@ -189,6 +188,7 @@ class SubAttributeForm(forms.ModelForm):
 class SubAttributeInline(admin.TabularInline):
     model = SubAttribute
     form = SubAttributeForm
+
     
     list_display = ('name', 'value')
     
@@ -202,7 +202,7 @@ class SubAttributeInline(admin.TabularInline):
 
 class AttributeAdmin(admin.ModelAdmin):
     form = AttributeForm
-    list_display = ('name', 'attribute_type')
+    list_display = ('name', 'attribute_type','get_last_five_sub_attributes')
     inlines = [SubAttributeInline]  # Attach SubAttributeInline to Attribute admin
     def get_inline_instances(self, request, obj=None):
         inlines = super().get_inline_instances(request, obj)
@@ -210,6 +210,12 @@ class AttributeAdmin(admin.ModelAdmin):
         if obj is None:
             return []  # Hide inlines for new Attribute creation
         return inlines
+    
+    
+    def get_last_five_sub_attributes(self, obj):
+        # Fetch the last 5 SubAttribute items and join them into a string
+        return " , ".join([sub_attr.name for sub_attr in obj.last_five_sub_attributes()])
+    get_last_five_sub_attributes.short_description = "SubAttributes"
 ###########################################################################################################
 
 class BrandAdmin(admin.ModelAdmin):
